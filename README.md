@@ -498,6 +498,4 @@ Data Analyst | Data Science Professional
 - ** [Download Dataset](https://drive.google.com/file/d/1N-WfPSe9rUtBIHPPOpBYVbZev_nRsV3w/view?usp=drive_link)** - Google Drive (public access)
 ---
 
-**Made with ❤️ for data-driven decision making**
-
 *This project demonstrates end-to-end analytics capabilities from data preprocessing to actionable business insights, suitable for portfolio showcasing and practical business applications.*
