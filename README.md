@@ -24,13 +24,13 @@ A production-ready, end-to-end Customer Lifetime Value analysis combining RFM se
 - [Key Results](#key-results)
 - [Repository Structure](#repository-structure)
 - [How to Run](#how-to-run)
-- [Visualizations & Diagrams](#visualizations--diagrams)
 - [Business Recommendations](#business-recommendations)
 - [Model Performance](#model-performance)
 - [Limitations & Future Work](#limitations--future-work)
 - [Tech Stack](#tech-stack)
+- [Documentation](#documentation)
 - [Citation & License](#citation--license)
-- [Maintainer](#maintainer)
+- [Contact](#contact)
 
 ---
 
@@ -38,21 +38,22 @@ A production-ready, end-to-end Customer Lifetime Value analysis combining RFM se
 
 This repository provides a comprehensive framework for quantifying and predicting Customer Lifetime Value (CLV) in retail environments. The analysis combines:
 
-1. **RFM Segmentation** – stratify customers into 10 behavioral segments
-2. **Historical CLV** – measure actual 6-month customer spending across a holdout window
-3. **Clustering Analysis** – K-means identifies 5 behavioral groups beyond RFM
-4. **Predictive Modeling** – XGBoost forecasts future CLV with feature importance insights
-5. **Business Strategy** – data-driven recommendations for retention, reactivation, and growth
+1. **RFM Segmentation** – stratify customers into 10 behavioral segments based on Recency, Frequency, and Monetary value
+2. **Historical CLV** – measure actual 6-month customer spending across a holdout window to establish baseline patterns
+3. **Clustering Analysis** – K-means identifies 5 distinct behavioral groups beyond traditional RFM segmentation
+4. **Predictive Modeling** – XGBoost forecasts future CLV with interpretable feature importance insights
+5. **Business Strategy** – data-driven recommendations for retention, reactivation, and growth with quantified ROI
 
-**Use Case**: Enable marketing/customer success teams to prioritize high-value customers, allocate budgets strategically, and measure retention ROI.
+**Use Case**: Enable marketing and customer success teams to prioritize high-value customers, allocate budgets strategically, and measure retention ROI with confidence.
 
 ---
 
 ## Dataset
 
+### Overview
 | Property | Value |
 |----------|-------|
-| **Source** | Online Retail Dataset |
+| **Source** | Online Retail Dataset (UCI ML Repository) |
 | **Time Period** | Dec 1, 2010 – Dec 9, 2011 |
 | **Initial Records** | 541,909 transactions |
 | **Final Records** | 347,946 transactions (after cleaning) |
@@ -61,7 +62,14 @@ This repository provides a comprehensive framework for quantifying and predictin
 | **Geographic Focus** | United Kingdom (91.4% of transactions) |
 | **Key Features** | InvoiceNo, CustomerID, InvoiceDate, Quantity, UnitPrice, Description, Country |
 
-### Data Quality Issues Handled
+### Download Dataset
+The dataset is hosted on Google Drive due to file size constraints:
+
+** [Download OnlineRetail.csv](https://drive.google.com/file/d/1N-WfPSe9rUtBIHPPOpBYVbZev_nRsV3w/view?usp=drive_link)** (Public Access)
+
+Place the downloaded file in your working directory before running the notebook.
+
+### Data Quality Issues Addressed
 - **Missing CustomerID**: 134,697 rows (24.8%) removed
 - **Cancelled Orders**: 9,288 rows (1.7%) removed
 - **Invalid Prices/Quantities**: 40 rows removed
@@ -72,7 +80,7 @@ This repository provides a comprehensive framework for quantifying and predictin
 
 ---
 
-## 🔬 Methodology
+## Methodology
 
 ### Step 1: Data Preprocessing & Feature Engineering
 ```
@@ -80,7 +88,7 @@ Raw Data (541,909 rows)
     ↓
 Remove cancelled orders, missing IDs, invalid values
     ↓
-Filter to UK market, remove outliers
+Filter to UK market, remove outliers (P99)
     ↓
 Add Revenue column (Quantity × UnitPrice)
     ↓
@@ -100,25 +108,16 @@ Clean Data (347,946 rows, 3,874 customers)
 
 **Segmentation Logic**:
 - Calculate combined RFM scores (R+F+M range: 3-15)
-- Map to 10 customer segments:
-  - Champions (RFM ≥ 12): Recent, frequent, high-value
-  - Loyal Customers (RFM 10-11): Regular, consistent spending
-  - Potential Loyalists (RFM 8-9): Decent value, room to grow
-  - At Risk (low R, any F/M): Churning, needs reactivation
-  - Lost Customers (very low R): No recent activity
-  - And 5 more nuanced segments...
+- Map to 10 customer segments (Champions, Loyal, At Risk, Lost, etc.)
+- Each segment receives tailored retention/reactivation strategy
 
 ### Step 3: Historical CLV Calculation
 ```
 Training Period (6 months):     Dec 2010 – May 2011 → Learn customer patterns
     ↓
 Extract Training Features:
-  - Purchase_Frequency (transaction count)
-  - Total_Revenue (total spending)
-  - Avg_Order_Value (mean per transaction)
-  - Customer_Lifespan (days between first & last purchase)
-  - Purchase_Rate (frequency / lifespan)
-  - Revenue_Per_Day (revenue / lifespan)
+  - Purchase_Frequency, Total_Revenue, Avg_Order_Value
+  - Customer_Lifespan, Purchase_Rate, Revenue_Per_Day
     ↓
 Prediction Period (6 months):   Jun 2011 – Dec 2011 → Actual future spending
     ↓
@@ -129,8 +128,8 @@ Retention Metric: % of customers with CLV > 0 = 69.6%
 
 ### Step 4: K-means Clustering
 - **Features**: Recency, Frequency, Monetary (standardized)
-- **Optimal K**: 5 (elbow method)
-- **Output**: 5 behavioral clusters (e.g., "High-Value Active," "At-Risk," "Recent Customers")
+- **Optimal K**: 5 (determined via elbow method)
+- **Output**: 5 behavioral clusters (High-Value Active, At-Risk, Recent Customers, etc.)
 
 ### Step 5: Predictive CLV Modeling
 
@@ -144,19 +143,19 @@ Retention Metric: % of customers with CLV > 0 = 69.6%
 
 ---
 
-## 📊 Key Results
+## Key Results
 
 ### RFM Segmentation Results
 
-| Segment | Customers | % of Base | Avg Revenue | Revenue Share | Action |
-|---------|-----------|-----------|------------|---------------|---------| 
-| **Champions** | 1,068 | 27.6% | £3,821.86 | **72.7%** | Retain/VIP |
-| **Loyal Customers** | 516 | 13.3% | £1,177.74 | 10.8% | Nurture |
-| **Potential Loyalists** | 582 | 15.0% | £674.61 | 7.0% | Grow |
-| **About to Sleep** | 492 | 12.7% | £363.63 | 3.2% | Reactive |
-| **Lost Customers** | 543 | 14.0% | £242.50 | 2.3% | Win-back |
-| **At Risk** | 174 | 4.5% | £489.67 | 1.5% | Reactivate |
-| Other Segments | 499 | 13.0% | £232–£1,190 | 1.5% | Situational |
+| Segment | Customers | % of Base | Avg Revenue | Revenue Share | Strategic Action |
+|---------|-----------|-----------|-------------|---------------|------------------|
+| **Champions** | 1,068 | 27.6% | £3,821.86 | **72.7%** | VIP retention programs |
+| **Loyal Customers** | 516 | 13.3% | £1,177.74 | 10.8% | Nurture & reward |
+| **Potential Loyalists** | 582 | 15.0% | £674.61 | 7.0% | Growth campaigns |
+| **About to Sleep** | 492 | 12.7% | £363.63 | 3.2% | Reactivation nudges |
+| **Lost Customers** | 543 | 14.0% | £242.50 | 2.3% | Win-back offers |
+| **At Risk** | 174 | 4.5% | £489.67 | 1.5% | Immediate intervention |
+| Other Segments | 499 | 13.0% | £232–£1,190 | 1.5% | Situational tactics |
 
 **Key Insight**: 27.6% of customers (Champions) generate 72.7% of revenue—extreme concentration requiring priority retention strategies.
 
@@ -174,22 +173,22 @@ Retention Metric: % of customers with CLV > 0 = 69.6%
 | Potential Revenue at Risk | £395,787 (7.0% of total) |
 
 **Correlations**:
-- Frequency ↔ CLV: 0.607 (strong positive)
-- Customer Lifespan ↔ CLV: 0.350 (moderate positive)
+- Frequency ↔ CLV: **0.607** (strong positive)
+- Customer Lifespan ↔ CLV: **0.350** (moderate positive)
 
 ### Clustering Results (K=5)
 
 | Cluster | Size | Recency (avg) | Frequency (avg) | Avg Value | Profile |
 |---------|------|---------------|-----------------|-----------|---------|
-| Recent Customers | 2,537 | 45 days | 3.15x | £961 | Core customer base |
-| High-Value Active | 31 | 6 days | 38x | £25,399 | VIP/whales |
-| At-Risk Customers | 957 | 247 days | 1.55x | £401 | Churned, inactive |
-| Emerging High-Value | 345 | 17 days | 14.4x | £5,293 | Growth potential |
-| Ultra High-Value | 4 | 2 days | 128x | £44,736 | Extreme outliers |
+| Recent Customers | 2,537 (65.5%) | 45 days | 3.15x | £961 | Core customer base |
+| High-Value Active | 31 (0.8%) | 6 days | 38x | £25,399 | VIP/whales segment |
+| At-Risk Customers | 957 (24.7%) | 247 days | 1.55x | £401 | Churned, inactive |
+| Emerging High-Value | 345 (8.9%) | 17 days | 14.4x | £5,293 | Growth potential |
+| Ultra High-Value | 4 (0.1%) | 2 days | 128x | £44,736 | Extreme outliers |
 
 ---
 
-## 🤖 Model Performance
+## Model Performance
 
 ### Prediction Accuracy
 
@@ -213,7 +212,7 @@ Retention Metric: % of customers with CLV > 0 = 69.6%
 | Purchase_Rate | 0.0317 | 3.2% |
 | Avg_Order_Value | 0.0250 | 2.5% |
 
-**Key Insight**: Historical revenue dominates (62%), indicating past spending is the strongest CLV predictor. Recent revenue velocity (Revenue_Per_Day) adds 20% more signal.
+**Key Insight**: Historical revenue dominates predictions (62%), indicating past spending is the strongest CLV predictor. Recent revenue velocity (Revenue_Per_Day) adds 20% more signal.
 
 ### Cross-Validation
 - **Mean CV R²**: 0.5295 (±0.2706)
@@ -221,201 +220,129 @@ Retention Metric: % of customers with CLV > 0 = 69.6%
 
 ---
 
-## 📁 Repository Structure
+## Repository Structure
 
 ```
 customer-lifetime-value-analysis/
 │
 ├── README.md                                    # This file
-├── LICENSE                                      # MIT license
-├── requirements.txt                             # Python dependencies
-│
-├── notebooks/
-│   └── Customer_Lifetime_Value_Analysis.ipynb   # Main analysis notebook
-│
-├── reports/
-│   └── CLV_Analysis_Report.md                   # Detailed project report (10 pages)
-│
-├── assets/                                      # Visualizations & diagrams
-│   ├── cover.png                                # Project cover/hero image
-│   ├── rfm_segment_distribution.png             # RFM segment breakdown chart
-│   ├── clv_distribution.png                     # CLV histogram
-│   ├── frequency_vs_clv_scatter.png             # Scatter plot: frequency vs CLV
-│   ├── lifespan_vs_clv_scatter.png              # Scatter plot: lifespan vs CLV
-│   ├── model_actual_vs_predicted.png            # Model performance scatter
-│   ├── feature_importance.png                   # XGBoost feature importance bar chart
-│   ├── pipeline_flow.png                        # Data pipeline flowchart
-│   ├── segment_revenue_breakdown.png            # Revenue contribution by segment
-│   └── roi_projections.png                      # Business impact projections
-│
-└── data/                                        # (Optional) data directory
-    ├── raw/
-    │   └── OnlineRetail.csv                     # Raw transaction data
-    └── processed/
-        └── rfm_analysis_results.csv             # Processed RFM segments
+├── LICENSE                                      # MIT License
+├── Customer_Lifetime_Value_Analysis.ipynb       # Main analysis notebook
+├── RFM analysis.pdf                             # Detailed project report
+└── requirements.txt                             # Python dependencies (create from list below)
 ```
+
+**Note**: Dataset is hosted externally on Google Drive due to size constraints. Download link provided in [Dataset](#dataset) section.
 
 ---
 
-## 🚀 How to Run
+## How to Run
 
-### 1. Clone the Repository
+### Prerequisites
+- Python 3.10 or higher
+- Jupyter Notebook
+- 8GB+ RAM recommended
+
+### Step 1: Clone the Repository
 ```bash
 git clone https://github.com/yourusername/customer-lifetime-value-analysis.git
 cd customer-lifetime-value-analysis
 ```
 
-### 2. Set Up Environment
+### Step 2: Set Up Environment
 ```bash
 # Create virtual environment
 python -m venv venv
-source venv/bin/activate          # On Windows: venv\Scripts\activate
+
+# Activate virtual environment
+# On macOS/Linux:
+source venv/bin/activate
+# On Windows:
+venv\Scripts\activate
 
 # Install dependencies
 pip install -r requirements.txt
 ```
 
-### 3. Download Data
-Place the `OnlineRetail.csv` file in `data/raw/` directory, or adjust the data path in the notebook.
+### Step 3: Download Dataset
+1. Download `OnlineRetail.csv` from [Google Drive link](https://drive.google.com/file/d/1N-WfPSe9rUtBIHPPOpBYVbZev_nRsV3w/view?usp=drive_link)
+2. Place the file in your working directory (same location as the notebook)
 
-### 4. Run the Notebook
+### Step 4: Run the Analysis
 ```bash
-jupyter notebook notebooks/Customer_Lifetime_Value_Analysis.ipynb
+# Launch Jupyter Notebook
+jupyter notebook Customer_Lifetime_Value_Analysis.ipynb
 ```
 
-**Key Cells to Execute**:
+### Step 5: Execute Notebook
+Run all cells sequentially (Cell → Run All). The notebook is organized in clear sections:
 1. Environment setup & imports
 2. Data loading & preprocessing
-3. EDA (Exploratory Data Analysis)
-4. RFM analysis & visualization
+3. Exploratory Data Analysis
+4. RFM analysis & segmentation
 5. Historical CLV calculation
 6. Clustering analysis
-7. Model training & evaluation
+7. Predictive modeling (XGBoost)
 8. Business insights & recommendations
 
-### 5. Generate Outputs
-- RFM segments CSV
-- Trained CLV model (pickle/joblib)
-- Visualization charts (saved to `assets/`)
-- Analysis report
+**Expected Runtime**: 2-3 minutes on standard hardware
 
 ---
 
-## 📸 Visualizations & Diagrams
-
-### Recommended Screenshots to Add (place in `assets/`)
-
-1. **rfm_segment_distribution.png**
-   - Pie chart or bar chart showing % of customers in each RFM segment
-   - Include revenue contribution overlay
-
-2. **clv_distribution.png**
-   - Histogram of 6-month CLV with mean/median lines
-   - Shows right-skewed distribution of customer value
-
-3. **frequency_vs_clv_scatter.png**
-   - Scatter plot: Purchase Frequency (x-axis) vs CLV (y-axis)
-   - Color by RFM segment or retention status
-   - Shows strong 0.607 correlation
-
-4. **lifespan_vs_clv_scatter.png**
-   - Scatter plot: Customer Lifespan (x-axis) vs CLV (y-axis)
-   - Moderate 0.350 correlation, more dispersed
-
-5. **model_actual_vs_predicted.png**
-   - Scatter: Actual CLV (x) vs Predicted CLV (y)
-   - Diagonal reference line (perfect prediction)
-   - Shading for prediction error bands (±£500)
-
-6. **feature_importance.png**
-   - Horizontal bar chart: Top 7 features ranked by importance
-   - Total_Revenue dominates at 62.3%
-
-7. **segment_revenue_breakdown.png**
-   - Stacked bar: Customers count vs revenue by segment
-   - Illustrates concentration in Champions/Loyal
-
-8. **pipeline_flow.png**
-   - Simple flowchart: Raw Data → Preprocess → RFM/CLV → Modeling → Business Insights
-   - Include key metrics at each stage
-
-### Diagram Suggestions
-
-**Data Pipeline Flow**:
-```
-Raw Transactions (541,909)
-    ↓ [Remove cancellations, nulls, outliers]
-Clean Data (347,946)
-    ↓ [RFM scoring + segmentation]
-Customer Segments (3,874)
-    ↓ [Historical CLV + Clustering]
-RFM + CLV Dataset (2,427)
-    ↓ [Feature engineering + modeling]
-XGBoost Predictions
-    ↓
-Business Recommendations & ROI
-```
-
----
-
-## 💡 Business Recommendations
+## Business Recommendations
 
 ### 1. Champion & Loyal Customer Retention (1,584 customers)
-**Action**: Implement VIP loyalty program with exclusive benefits
+**Objective**: Reduce churn by 5% to retain £86,333 in CLV
+
+**Tactics**:
+- Implement VIP loyalty program with exclusive benefits
 - Personalized product recommendations based on purchase history
 - Early access to new products and seasonal sales
-- Dedicated customer service tier with faster response
+- Dedicated customer service tier with faster response times
 - Exclusive rewards/points multiplier (2-3x on purchases)
-
-**Expected Impact**: 
-- Reduce churn by 5% → retain £86,333 in CLV
-- Increase repeat purchase frequency by 10%
 
 ---
 
 ### 2. Customer Reactivation Campaign (666 at-risk/lost customers)
-**Action**: Staged win-back email & incentive campaign
-- Segment messaging by inactivity level (3-6 months vs 6+ months)
-- Special one-time discount offers (10-15% off, or free shipping)
-- Survey to understand churn drivers
-- Targeted product recommendations based on prior purchases
+**Objective**: Achieve 10% reactivation rate to capture £26,411 new CLV
 
-**Expected Impact**:
-- 10% reactivation rate → capture £26,411 new CLV
-- Recover £395,787 revenue at risk
+**Tactics**:
+- Staged win-back email campaigns segmented by inactivity level
+- Special one-time discount offers (10-15% off or free shipping)
+- Survey to understand churn drivers
+- Targeted product recommendations based on prior purchase patterns
+- Limited-time "We Miss You" incentives
 
 ---
 
 ### 3. Growth Development Program (823 potential loyalists)
-**Action**: Cross-sell/upsell campaigns + frequency incentives
-- Bundle offers combining frequent/complementary items
-- Loyalty point system incentivizing repeat purchases
-- Frequency-based escalating discounts (e.g., 5% after 3 orders, 10% after 5)
-- Personalized category recommendations
+**Objective**: Increase average order value by 15% to grow £33,247 in CLV
 
-**Expected Impact**:
-- 15% increase in average order value → grow £33,247
-- Convert 20% from Potential Loyalists to Loyal Customers
+**Tactics**:
+- Cross-sell and upsell campaigns with intelligent bundling
+- Loyalty point system incentivizing repeat purchases
+- Frequency-based escalating discounts (5% after 3 orders, 10% after 5)
+- Personalized category recommendations
+- Gamification elements (badges, milestones)
 
 ---
 
 ### 4. Predictive CLV Integration
-**Action**: Use model predictions to operationalize CLV
+**Objective**: Optimize resource allocation using model predictions
+
+**Tactics**:
 - Set dynamic **Customer Acquisition Cost (CAC) limits** by predicted CLV tier
   - Champions: up to £500 CAC
   - Loyal: up to £150 CAC
   - Potential Loyalists: up to £50 CAC
-- Allocate support resources and merchandising budget proportional to predicted CLV
+- Allocate support resources proportional to predicted CLV
 - Implement early churn warning system (low predicted CLV + high recency)
 - A/B test offers on high-predicted-CLV segments first
-
-**Expected Impact**:
-- Optimize marketing spend efficiency
-- Improve targeting ROI
+- Prioritize merchandising and inventory based on CLV predictions
 
 ---
 
-### Projected Financial Impact
+### Financial Impact Summary
 
 | Initiative | Revenue Impact | Mechanism |
 |-----------|-----------------|-----------|
@@ -426,38 +353,39 @@ Business Recommendations & ROI
 
 ---
 
-## 🔮 Limitations & Future Work
+## Limitations & Future Work
 
 ### Current Limitations
-1. **Moderate Model R²** (0.5136): Explains ~51% of CLV variance; ~49% driven by external factors (seasonality, campaigns, macroeconomic)
-2. **Single Market/Year**: UK-only, Dec 2010–Dec 2011; patterns may differ in other geographies or time periods
-3. **Feature Scope**: Lacks external signals (product category, campaign exposure, customer demographics, seasonal trends)
-4. **Temporal Leakage Risk**: Training/prediction periods are contiguous; no gap for true holdout testing
+1. **Moderate Model R²** (0.5136): Explains ~51% of CLV variance; ~49% driven by external factors not captured in features
+2. **Single Market/Year**: UK-only analysis over 12 months; patterns may differ in other geographies or time periods
+3. **Feature Scope**: Lacks product category, campaign exposure, customer demographics, and seasonality indicators
+4. **Temporal Assumptions**: Contiguous training/prediction periods; no gap for true holdout testing
 
 ### Recommended Enhancements
 
 **Short-term**:
-- Add seasonality (month/quarter dummies) to features
-- Include product category as feature
-- Test LightGBM, CatBoost for potential R² improvements
-- Implement monthly model retraining with performance monitoring
+- Add seasonality features (month, quarter dummies)
+- Include product category as predictor
+- Test alternative algorithms (LightGBM, CatBoost) for potential accuracy gains
+- Implement monthly model retraining with drift monitoring
 
 **Medium-term**:
-- Expand to multi-country analysis (identify geography-specific patterns)
+- Expand to multi-country analysis
 - Incorporate customer demographics (age, location) if available
-- Build category-level CLV for cross-sell optimization
-- Develop real-time churn prediction system (daily/weekly scoring)
+- Build category-level CLV for targeted cross-sell optimization
+- Develop real-time churn prediction system with daily/weekly scoring
 
 **Long-term**:
-- Integrate with CRM/BI platform for operational dashboards
-- Implement A/B testing framework for CLV-driven campaigns
-- Add customer satisfaction scores (NPS, reviews) to model
-- Develop tiered customer strategies (automated playbooks per segment)
+- Integrate with CRM/BI platforms for operational dashboards
+- Implement automated A/B testing framework for CLV-driven campaigns
+- Add customer satisfaction scores (NPS, reviews) to feature set
+- Develop tiered customer strategies with automated playbook execution
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
+### Core Technologies
 | Component | Tool | Version |
 |-----------|------|---------|
 | **Language** | Python | 3.10+ |
@@ -465,9 +393,9 @@ Business Recommendations & ROI
 | **Numerical Computing** | NumPy | 1.23+ |
 | **ML/Modeling** | XGBoost, Scikit-learn | 1.7+, 1.3+ |
 | **Visualization** | Matplotlib, Seaborn | 3.5+, 0.12+ |
-| **Notebook** | Jupyter | 1.0+ |
+| **Notebook Environment** | Jupyter | 1.0+ |
 
-### Dependencies
+### Dependencies (requirements.txt)
 ```
 pandas>=1.5.0
 numpy>=1.23.0
@@ -480,86 +408,96 @@ jupyter>=1.0.0
 
 ---
 
-## 📝 Citation & License
+## Documentation
+
+### Detailed Report
+For an in-depth analysis including methodology, visualizations, and extended insights, refer to:
+
+** [RFM analysis.pdf](RFM%20analysis.pdf)** - Project report 
+
+The report includes:
+- Executive summary with key findings
+- Detailed methodology and data preprocessing steps
+- Complete RFM segmentation analysis with visual breakdowns
+- CLV calculation methodology and results
+- Model development, validation, and performance metrics
+- Business recommendations with ROI projections
+- Limitations discussion and future enhancement roadmap
+
+---
+
+## Citation & License
 
 ### License
 This project is licensed under the **MIT License** – see the [LICENSE](LICENSE) file for details.
 
 ### Citation
-If you use this analysis or code, please cite as:
+If you use this analysis or code in your research or projects, please cite as:
 
 ```bibtex
 @misc{kumar2025clv,
   title={Customer Lifetime Value Analysis: RFM Segmentation & Predictive Modeling},
   author={Kumar, Dipanshu},
   year={2025},
-  url={https://github.com/yourusername/customer-lifetime-value-analysis}
+  howpublished={\url{https://github.com/yourusername/customer-lifetime-value-analysis}},
+  note={Accessed: 2025-11-19}
 }
 ```
 
 ### Acknowledgments
 - **Online Retail Dataset**: UCI Machine Learning Repository
-- **Python Ecosystem**: Pandas, Scikit-learn, XGBoost, and the broader open-source community for enabling reproducible analytics
+- **Python Ecosystem**: Pandas, Scikit-learn, XGBoost, and the broader open-source community
+- **Research Foundation**: Built on established RFM segmentation and CLV modeling methodologies
 
 ---
 
-## 👤 Maintainer
+## Contact
 
 **Dipanshu Kumar**  
 Data Analyst | Data Science Professional  
-📧 Email: [your-email@example.com]  
-🔗 LinkedIn: [your-linkedin-profile]  
-🐙 GitHub: [your-github-profile]  
 
-Focus: Production-grade analytics, predictive modeling, and data-driven business strategy with measurable ROI impact.
+📧 Email: kayhiusy@gmail.com  
+🔗 LinkedIn: [linkedin.com/in/yourprofile]([https://linkedin.com/in/yourprofile](https://www.linkedin.com/in/dipanshu-kumar-61a21322a/))  
+🐙 GitHub: [@yourusername](https://github.com/DipanshuK2003)  
 
----
-
-## 🤝 Contributing
-
-Contributions are welcome! Please:
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/improvement`)
-3. Commit changes (`git commit -m 'Add improvement'`)
-4. Push to branch (`git push origin feature/improvement`)
-5. Open a Pull Request
+**Focus Areas**: Production-grade analytics, predictive modeling, customer analytics, and data-driven business strategy with measurable ROI impact.
 
 ---
 
-## ❓ FAQ
+## Project Statistics
 
-**Q: Can I use this on other retail datasets?**  
-A: Yes! The pipeline is generalizable. Adjust the data loading path, date range, and filtering logic as needed. Test on ~1-2 years of data for reliable CLV patterns.
-
-**Q: How often should I retrain the model?**  
-A: Recommend monthly retraining with performance monitoring. If R² drops >5%, investigate for data drift or market changes.
-
-**Q: What if my model R² is lower?**  
-A: This is normal—CLV depends on many external factors. Focus on directional accuracy rather than absolute predictions; use for customer tier prioritization rather than exact forecasts.
-
-**Q: Can I deploy this for real-time predictions?**  
-A: Yes, export the trained model (joblib) and wrap in a Flask/FastAPI service for batch or real-time scoring.
-
----
-
-## 📊 Project Statistics
-
-- **Analysis Duration**: ~2 weeks (EDA, modeling, validation, insights)
-- **Lines of Code**: ~1,500+ (notebook + utilities)
-- **Key Findings**: 10+ actionable insights with quantified business impact
+- **Development Time**: ~2-3 weeks (EDA, modeling, validation, documentation)
+- **Code Base**: 1,500+ lines (notebook + utilities)
+- **Key Deliverables**: 10+ actionable insights with quantified business impact
 - **Model Accuracy**: 51.4% R² (suitable for strategic use)
-- **ROI Potential**: +2.6% incremental revenue (~£146k)
+- **ROI Potential**: +2.6% incremental revenue (~£146k annually)
+- **Documentation**: Comprehensive 10-page report + production-ready code
 
 ---
 
-## 🔗 Quick Links
+## Project Status
 
-- [Full Report](reports/CLV_Analysis_Report.md)
-- [Jupyter Notebook](notebooks/Customer_Lifetime_Value_Analysis.ipynb)
-- [Issues/Questions](https://github.com/yourusername/customer-lifetime-value-analysis/issues)
-
----
+**Current Status**: Production-Ready
 
 **Last Updated**: November 2025  
 **Data Coverage**: December 2010 – December 2011  
-**Status**: ✅ Production-Ready
+**Maintenance**: Active  
+
+**Planned Updates**:
+- Quarterly model retraining with updated data
+- Feature engineering enhancements
+- Extended documentation with use case examples
+- Community contributions integration
+
+---
+
+## Quick Links
+
+- ** [Jupyter Notebook](Customer_Lifetime_Value_Analysis.ipynb)** - Complete analysis code
+- ** [Detailed Report](RFM%20analysis.pdf)** - Full project documentation
+- ** [Download Dataset](https://drive.google.com/file/d/1N-WfPSe9rUtBIHPPOpBYVbZev_nRsV3w/view?usp=drive_link)** - Google Drive (public access)
+---
+
+**Made with ❤️ for data-driven decision making**
+
+*This project demonstrates end-to-end analytics capabilities from data preprocessing to actionable business insights, suitable for portfolio showcasing and practical business applications.*
