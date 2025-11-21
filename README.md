@@ -458,7 +458,7 @@ Data Analyst | Data Science Professional
 
 📧 Email: kayhiusy@gmail.com  
 🔗 LinkedIn: [linkedin.com/in/Dipanshu Kumar](https://www.linkedin.com/in/dipanshu-kumar-61a21322a/)  
-🐙 GitHub: [@yourusername](https://github.com/DipanshuK2003)  
+🐙 GitHub: [@DipanshuK2003](https://github.com/DipanshuK2003)  
 
 **Focus Areas**: Production-grade analytics, predictive modeling, customer analytics, and data-driven business strategy with measurable ROI impact.
 
